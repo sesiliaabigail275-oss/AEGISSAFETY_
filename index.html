@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS Safety | K3 System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --k3-green: #008000; }
+        body { background-color: #f0f4f0; font-family: 'Inter', sans-serif; }
+        .header-k3 { background: white; border-bottom: 5px solid var(--k3-green); }
+        .card { background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .active-tab { background: var(--k3-green) !important; color: white !important; }
+        .severity-btn { border: 2px solid #e5e7eb; transition: all 0.2s; }
+        .selected-low { background: #dcfce7; border-color: #22c55e; color: #166534; }
+        .selected-med { background: #fef9c3; border-color: #eab308; color: #854d0e; }
+        .selected-high { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        .preview-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; margin-top: 10px; border: 2px solid #ddd; }
+    </style>
+</head>
+<body class="pb-24">
+
+    <div class="header-k3 p-6 shadow-md mb-6 text-center">
+        <div class="flex justify-center mb-3">
+            <div class="h-20 w-20 rounded-full border-4 border-green-700 p-1 bg-white overflow-hidden shadow-sm">
+                <img src="LOGO-K3-TRANSPARANT.png" alt="Logo AEGIS" class="h-full w-full object-contain">
+            </div>
+        </div>
+        <h1 class="text-2xl font-black text-gray-800 uppercase">AEGIS SAFETY</h1>
+        <p class="text-[10px] font-bold text-green-700 uppercase tracking-[0.2em]">Sistem Informasi K3 Kehutanan</p>
+    </div>
+
+    <div class="container mx-auto px-4">
+        <div class="flex gap-2 mb-6 bg-white p-1 rounded-xl shadow-inner">
+            <button onclick="switchTab('identitas')" id="tab-identitas" class="flex-1 py-3 rounded-lg text-xs font-bold active-tab">
+                <i class="fas fa-id-badge mr-2"></i>IDENTITAS
+            </button>
+            <button onclick="switchTab('lapor')" id="tab-lapor" class="flex-1 py-3 rounded-lg text-xs font-bold text-gray-400">
+                <i class="fas fa-exclamation-triangle mr-2"></i>LAPOR BAHAYA
+            </button>
+        </div>
+
+        <div id="content-identitas" class="space-y-4">
+            <div class="card p-6 border-l-8 border-green-600">
+                <h3 class="font-bold text-gray-800 mb-4 text-sm uppercase italic underline">Profil Medis & Pekerja</h3>
+                <div class="space-y-4">
+                    <input type="text" id="nama" class="w-full border p-3 rounded-lg outline-none focus:ring-2 focus:ring-green-500" placeholder="Nama Lengkap">
+                    
+                    <select id="divisi" class="w-full border p-3 rounded-lg bg-white outline-none">
+                        <option value="">-- Pilih Divisi --</option>
+                        <option value="Silvikultur">Silvikultur</option>
+                        <option value="Pemanenan">Pemanenan</option>
+                        <option value="Perencanaan">Perencanaan</option>
+                        <option value="Konservasi">Konservasi</option>
+                    </select>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <select id="goldar" class="border p-3 rounded-lg bg-white outline-none">
+                            <option value="">Gol. Darah</option>
+                            <option value="A">A</option><option value="B">B</option><option value="AB">AB</option><option value="O">O</option>
+                        </select>
+                        <input type="tel" id="emergency_contact" class="border p-3 rounded-lg outline-none" placeholder="No. Darurat (WA)">
+                    </div>
+
+                    <textarea id="riwayat_penyakit" class="w-full border rounded-lg p-3 text-sm outline-none bg-gray-50" rows="2" placeholder="Riwayat Penyakit / Alergi (Jika Ada)"></textarea>
+
+                    <button onclick="saveProfile()" class="w-full bg-green-700 text-white py-4 rounded-xl font-bold shadow-lg uppercase">SIMPAN PROFIL</button>
+                </div>
+            </div>
+
+            <div class="card p-5 bg-yellow-50 border border-yellow-200">
+                <h4 class="text-xs font-black text-yellow-800 mb-2 uppercase tracking-widest"><i class="fas fa-hard-hat mr-1"></i> Standar Operasional (SOP):</h4>
+                <ul class="text-[10px] list-disc ml-4 space-y-1 text-yellow-900 font-medium">
+                    <li>Wajib menggunakan APD lengkap di area hutan (Helm, Sepatu Boot).</li>
+                    <li>Pastikan jalur evakuasi (Escape Route) sudah ditentukan sebelum menebang.</li>
+                    <li>Dilarang bekerja sendirian tanpa komunikasi aktif.</li>
+                    <li>Laporkan setiap "Near Miss" atau hampir celaka segera.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="content-lapor" class="hidden space-y-4">
+            <div class="card p-6 border-l-8 border-red-600">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="date" id="tgl_lapor" class="w-full border p-2 rounded-lg text-xs">
+                        <input type="time" id="jam_lapor" class="w-full border p-2 rounded-lg text-xs">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Tingkat Risiko:</label>
+                        <div class="grid grid-cols-3 gap-2 mt-1">
+                            <button onclick="setRisk('RENDAH')" id="risk-low" class="severity-btn py-2 text-[10px] font-bold rounded-lg bg-gray-50">RENDAH</button>
+                            <button onclick="setRisk('SEDANG')" id="risk-med" class="severity-btn py-2 text-[10px] font-bold rounded-lg bg-gray-50">SEDANG</button>
+                            <button onclick="setRisk('TINGGI')" id="risk-high" class="severity-btn py-2 text-[10px] font-bold rounded-lg bg-gray-50">TINGGI</button>
+                        </div>
+                    </div>
+
+                    <select id="kategori" class="w-full border p-3 rounded-lg font-bold text-sm bg-white">
+                        <option value="">Pilih Kategori Bahaya...</option>
+                        <option value="Pohon Rawan">Pohon Rawan Tumbang</option>
+                        <option value="Kecelakaan Alat">Masalah Alat Berat</option>
+                        <option value="Binatang Buas">Adanya Satwa Berbahaya</option>
+                        <option value="Pelanggaran APD">Pekerja Tanpa APD</option>
+                    </select>
+
+                    <textarea id="detail" class="w-full border rounded-lg p-3 text-sm outline-none" rows="3" placeholder="Jelaskan detail temuan..."></textarea>
+
+                    <div class="border-2 border-dashed border-gray-300 p-4 rounded-xl bg-gray-50 text-center">
+                        <label for="foto" class="cursor-pointer">
+                            <i class="fas fa-camera text-gray-400 text-2xl mb-1"></i>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Foto Bukti Lapangan</p>
+                        </label>
+                        <input type="file" id="foto" class="hidden" accept="image/*" onchange="previewImage(event)">
+                        <img id="img-preview" class="preview-img">
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
+                        <span id="coord-text" class="text-xs font-bold text-blue-700 italic">GPS: Belum Terkunci</span>
+                        <button onclick="getLocation()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase">Kunci Posisi</button>
+                    </div>
+
+                    <button onclick="kirimLaporan()" id="btn-kirim" class="w-full bg-red-600 text-white py-5 rounded-xl font-black shadow-xl uppercase tracking-widest">
+                        KIRIM LAPORAN K3
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6Y85HP8PmW8R1BvfUm0urEkfnCMnaEz-BfFu3ULxnjb7palVokUwgifyGj4jscXxkHQ/exec"; 
+        let lat = "", lng = "", currentRisk = "RENDAH";
+
+        function setRisk(val) {
+            currentRisk = val;
+            document.getElementById('risk-low').className = "severity-btn py-2 text-[10px] font-bold rounded-lg bg-gray-50";
+            document.getElementById('risk-med').className = "severity-btn py-2 text-[10px] font-bold rounded-lg bg-gray-50";
+            document.getElementById('risk-high').className = "severity-btn py-2 text-[10px] font-bold rounded-lg bg-gray-50";
+            if(val === 'RENDAH') document.getElementById('risk-low').classList.add('selected-low');
+            if(val === 'SEDANG') document.getElementById('risk-med').classList.add('selected-med');
+            if(val === 'TINGGI') document.getElementById('risk-high').classList.add('selected-high');
+        }
+
+        function saveProfile() {
+            const data = {
+                nama: document.getElementById('nama').value,
+                divisi: document.getElementById('divisi').value,
+                goldar: document.getElementById('goldar').value,
+                contact: document.getElementById('emergency_contact').value,
+                penyakit: document.getElementById('riwayat_penyakit').value
+            };
+            if(!data.nama || !data.divisi) { alert("Nama & Divisi wajib diisi!"); return; }
+            localStorage.setItem('user_profile', JSON.stringify(data));
+            alert("✅ Profil & Data Medis Tersimpan!");
+        }
+
+        function kirimLaporan() {
+            const profile = JSON.parse(localStorage.getItem('user_profile') || "{}");
+            if(!profile.nama) { alert("⚠️ Isi profil di tab IDENTITAS dulu!"); switchTab('identitas'); return; }
+            if(!lat) { alert("Ambil lokasi GPS dulu!"); return; }
+
+            const btn = document.getElementById('btn-kirim');
+            btn.disabled = true; btn.innerHTML = "MENGIRIM...";
+
+            const data = {
+                waktu: document.getElementById('tgl_lapor').value + " " + document.getElementById('jam_lapor').value,
+                nama: profile.nama,
+                divisi: profile.divisi,
+                risiko: currentRisk,
+                kategori: document.getElementById('kategori').value,
+                detail: document.getElementById('detail').value,
+                lokasi: `https://www.google.com/maps?q=${lat},${lng}`
+            };
+
+            fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(data) })
+            .then(() => { alert("🚀 TERKIRIM!"); btn.disabled = false; btn.innerHTML = "KIRIM LAPORAN K3"; });
+        }
+
+        function switchTab(tab) {
+            document.getElementById('tab-identitas').classList.remove('active-tab');
+            document.getElementById('tab-lapor').classList.remove('active-tab');
+            document.getElementById('content-identitas').classList.add('hidden');
+            document.getElementById('content-lapor').classList.add('hidden');
+
+            if(tab === 'identitas') {
+                document.getElementById('tab-identitas').classList.add('active-tab');
+                document.getElementById('content-identitas').classList.remove('hidden');
+            } else {
+                document.getElementById('tab-lapor').classList.add('active-tab');
+                document.getElementById('content-lapor').classList.remove('hidden');
+                const now = new Date();
+                document.getElementById('tgl_lapor').value = now.toISOString().split('T')[0];
+                document.getElementById('jam_lapor').value = now.toTimeString().slice(0,5);
+                setRisk('RENDAH');
+            }
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    lat = p.coords.latitude; lng = p.coords.longitude;
+                    document.getElementById('coord-text').innerHTML = "LOKASI TERKUNCI ✅";
+                });
+            }
+        }
+
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const out = document.getElementById('img-preview');
+                out.src = reader.result; out.style.display = 'block';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        window.onload = () => {
+            const p = JSON.parse(localStorage.getItem('user_profile') || "{}");
+            if(p.nama) {
+                document.getElementById('nama').value = p.nama;
+                document.getElementById('divisi').value = p.divisi;
+                document.getElementById('goldar').value = p.goldar;
+                document.getElementById('emergency_contact').value = p.contact;
+                document.getElementById('riwayat_penyakit').value = p.penyakit;
+            }
+        };
+    </script>
+</body>
+</html>
